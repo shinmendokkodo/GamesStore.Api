@@ -1,14 +1,16 @@
-using GamesStore.Api.Data;
+using GamesStore.Api.Extensions.Authorization;
+using GamesStore.Api.Extensions.Data;
 using GamesStore.Api.Extensions.Routes;
-using GamesStore.Api.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<IGamesRepository, InMemoryGamesRepository>();
+builder.Services.AddRepositories(builder.Configuration);
 
-var connString = builder.Configuration.GetConnectionString("GameStoreContext");
-builder.Services.AddSqlServer<GameStoreContext>(connString);
+builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddGameStoreAuthorization();
 
 var app = builder.Build();
+
+await app.Services.InitializeDbAsync();
 
 app.MapEndPoints();
 

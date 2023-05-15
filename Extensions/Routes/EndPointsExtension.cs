@@ -1,3 +1,4 @@
+using GamesStore.Api.Authorization;
 using GamesStore.Api.Extensions.Models;
 using GamesStore.Api.Models.Dtos;
 using GamesStore.Api.Repositories;
@@ -12,25 +13,27 @@ public static class EndPointsExtension
     {
         var group = routes.MapGroup("/games").WithParameterValidation();
 
-        group.MapGet("/", (IGamesRepository repository) => repository.GetAll().Select(g => g.AsDto()));
+        group.MapGet("/", async (IGamesRepository repository) => (await repository.GetAllAsync()).Select(g => g.AsDto()));
 
-        group.MapGet("/{id}", (IGamesRepository repository, int id) =>
+        group.MapGet("/{id}", async (IGamesRepository repository, int id) =>
         {
-            var game = repository.GetById(id);
+            var game = await repository.GetByIdAsync(id);
             return game is not null ? Results.Ok(game.AsDto()) : Results.NotFound();
         })
-        .WithName(GetGameEndPointName);
+        .WithName(GetGameEndPointName)
+        .RequireAuthorization(Policies.ReadAccess);
 
-        group.MapPost("/", (IGamesRepository repository, CreateGameDto CreateGameDto) =>
+        group.MapPost("/", async (IGamesRepository repository, CreateGameDto CreateGameDto) =>
         {
             var game = CreateGameDto.AsEntity();
-            repository.Create(game);
+            await repository.CreateAsync(game);
             return Results.CreatedAtRoute(GetGameEndPointName, new { id = game.Id }, game);
-        });
+        })
+        .RequireAuthorization(Policies.WriteAccess);
 
-        group.MapPut("/{id}", (IGamesRepository repository, int id, UpdateGameDto updateGameDto) =>
+        group.MapPut("/{id}", async (IGamesRepository repository, int id, UpdateGameDto updateGameDto) =>
         {
-            var existingGame = repository.GetById(id);
+            var existingGame = await repository.GetByIdAsync(id);
 
             if (existingGame is null)
             {
@@ -43,24 +46,26 @@ public static class EndPointsExtension
             existingGame.ReleaseDate = updateGameDto.ReleaseDate;
             existingGame.ImageUri = updateGameDto.ImageUri;
 
-            repository.Update(existingGame);
+            await repository.UpdateAsync(existingGame);
 
             return Results.NoContent();
-        });
+        })
+        .RequireAuthorization(Policies.WriteAccess);
 
-        group.MapDelete("/{id}", (IGamesRepository repository, int id) =>
+        group.MapDelete("/{id}", async (IGamesRepository repository, int id) =>
         {
-            var game = repository.GetById(id);
+            var game = await repository.GetByIdAsync(id);
 
             if (game is null)
             {
                 return Results.NotFound();
             }
 
-            repository.Delete(id);
+            await repository.DeleteAsync(id);
 
             return Results.NoContent();
-        });
+        })
+        .RequireAuthorization(Policies.WriteAccess);
 
         return group;
     }
