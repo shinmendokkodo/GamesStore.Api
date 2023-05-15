@@ -1,4 +1,4 @@
-using GamesStore.Api.Enitites;
+using GamesStore.Api.Entities;
 
 const string GetGameEndPointName = "GetGame";
 

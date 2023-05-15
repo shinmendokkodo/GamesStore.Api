@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace GamesStore.Api.Enitites;
+namespace GamesStore.Api.Entities;
 
 public class Game
 {
