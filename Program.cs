@@ -1,4 +1,5 @@
 using GamesStore.Api.Extensions.Authorization;
+using GamesStore.Api.Extensions.Cors;
 using GamesStore.Api.Extensions.Data;
 using GamesStore.Api.Extensions.ErrorHandling;
 using GamesStore.Api.Extensions.Routes;
@@ -14,6 +15,8 @@ builder.Services.AddApiVersioning(options =>
     options.DefaultApiVersion = new(1.0);
     options.AssumeDefaultVersionWhenUnspecified = true;
 });
+
+builder.Services.AddGamesStoreCors(builder.Configuration);
 
 // Json Logging
 // builder.Logging.AddJsonConsole(options =>
@@ -34,5 +37,7 @@ await app.Services.InitializeDbAsync();
 app.UseHttpLogging();
 
 app.MapEndPoints();
+
+app.UseCors();
 
 app.Run();

@@ -7,5 +7,5 @@ public record GameDtoV1
     string Genre,
     decimal Price,
     DateTime ReleaseDate,
-    string ImageUrl
+    string ImageUri
 );

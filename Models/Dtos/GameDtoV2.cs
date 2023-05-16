@@ -8,5 +8,5 @@ public record GameDtoV2
     decimal Price,
     decimal RetailPrice,
     DateTime ReleaseDate,
-    string ImageUrl
+    string ImageUri
 );
