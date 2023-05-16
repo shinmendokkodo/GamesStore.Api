@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using GamesStore.Api.Authorization;
 using GamesStore.Api.Extensions.Models;
 using GamesStore.Api.Models.Dtos;
@@ -13,7 +14,10 @@ public static class EndPointsExtension
     {
         var group = routes.MapGroup("/games").WithParameterValidation();
 
-        group.MapGet("/", async (IGamesRepository repository) => (await repository.GetAllAsync()).Select(g => g.AsDto()));
+        group.MapGet("/", async (IGamesRepository repository, ILoggerFactory loggerFactory) =>
+        {
+            return Results.Ok((await repository.GetAllAsync()).Select(g => g.AsDto()));
+        });
 
         group.MapGet("/{id}", async (IGamesRepository repository, int id) =>
         {
@@ -35,10 +39,7 @@ public static class EndPointsExtension
         {
             var existingGame = await repository.GetByIdAsync(id);
 
-            if (existingGame is null)
-            {
-                return Results.NotFound();
-            }
+            if (existingGame is null) return Results.NotFound();
 
             existingGame.Name = updateGameDto.Name;
             existingGame.Genre = updateGameDto.Genre;
@@ -47,7 +48,6 @@ public static class EndPointsExtension
             existingGame.ImageUri = updateGameDto.ImageUri;
 
             await repository.UpdateAsync(existingGame);
-
             return Results.NoContent();
         })
         .RequireAuthorization(Policies.WriteAccess);
@@ -56,13 +56,9 @@ public static class EndPointsExtension
         {
             var game = await repository.GetByIdAsync(id);
 
-            if (game is null)
-            {
-                return Results.NotFound();
-            }
+            if (game is null) return Results.NotFound();
 
             await repository.DeleteAsync(id);
-
             return Results.NoContent();
         })
         .RequireAuthorization(Policies.WriteAccess);
