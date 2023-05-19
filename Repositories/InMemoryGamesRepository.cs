@@ -64,14 +64,22 @@ public class InMemoryGamesRepository : IGamesRepository
         await Task.CompletedTask;
     }
 
-    public async Task<IEnumerable<Game>> GetAllAsync(int pageNumber, int pageSize)
+    public async Task<IEnumerable<Game>> GetAllAsync(int pageNumber, int pageSize, string? filter)
     {
         int skipCount = (pageNumber - 1) * pageSize;
-        return await Task.FromResult(games.Skip(skipCount).Take(pageSize));
+        return await Task.FromResult(FilterGames(filter).Skip(skipCount).Take(pageSize));
     }
 
-    public async Task<int> GetCountAsync()
+    public async Task<int> GetCountAsync(string? filter)
     {
-        return await Task.FromResult(games.Count);
+        return await Task.FromResult(FilterGames(filter).Count());
+    }
+
+    private IEnumerable<Game> FilterGames(string? filter)
+    {
+        return string.IsNullOrWhiteSpace(filter)
+            ? games
+            : games.Where(g => g.Name.Contains(filter)
+                || g.Genre.Contains(filter));
     }
 }
