@@ -8,7 +8,7 @@ using GamesStore.Api.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRepositories(builder.Configuration);
 
-builder.Services.AddAuthentication().AddJwtBearer();
+builder.Services.AddAuthentication().AddJwtBearer().AddJwtBearer("Auth0");
 builder.Services.AddGameStoreAuthorization();
 builder.Services.AddApiVersioning(options =>
 {
@@ -18,14 +18,16 @@ builder.Services.AddApiVersioning(options =>
 
 builder.Services.AddGamesStoreCors(builder.Configuration);
 
+/*
 // Json Logging
-// builder.Logging.AddJsonConsole(options =>
-// {
-//     options.JsonWriterOptions = new()
-//     {
-//         Indented = true
-//     };
-// });
+builder.Logging.AddJsonConsole(options =>
+{
+    options.JsonWriterOptions = new()
+    {
+        Indented = true
+    };
+});
+*/
 
 var app = builder.Build();
 

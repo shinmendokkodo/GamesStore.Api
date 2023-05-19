@@ -21,9 +21,16 @@ public static class EndPointsExtension
 
         #region V1Apis
 
-        group.MapGet("/", async (IGamesRepository repository, ILoggerFactory loggerFactory) =>
+        group.MapGet("/", async (
+            IGamesRepository repository,
+            ILoggerFactory loggerFactory,
+            [AsParameters] GetGamesDtoV1 request,
+            HttpContext httpContext) =>
         {
-            return Results.Ok((await repository.GetAllAsync()).Select(g => g.AsDtoV1()));
+            var totalCount = await repository.GetCountAsync();
+            httpContext.Response.AddPaginationHeader(totalCount, request.PageSize);
+            return Results.Ok((await repository.GetAllAsync(
+                request.PageNumber, request.PageSize)).Select(g => g.AsDtoV1()));
         })
         .MapToApiVersion(1.0);
 
@@ -40,9 +47,16 @@ public static class EndPointsExtension
 
         #region V2Apis
 
-        group.MapGet("/", async (IGamesRepository repository, ILoggerFactory loggerFactory) =>
+        group.MapGet("/", async (
+            IGamesRepository repository,
+            ILoggerFactory loggerFactory,
+            [AsParameters] GetGamesDtoV2 request,
+            HttpContext httpContext) =>
         {
-            return Results.Ok((await repository.GetAllAsync()).Select(g => g.AsDtoV2()));
+            var totalCount = await repository.GetCountAsync();
+            httpContext.Response.AddPaginationHeader(totalCount, request.PageSize);
+            return Results.Ok((await repository.GetAllAsync(
+                request.PageNumber, request.PageSize)).Select(g => g.AsDtoV2()));
         })
         .MapToApiVersion(2.0);
 
@@ -57,7 +71,8 @@ public static class EndPointsExtension
 
         #endregion
 
-        group.MapPost("/", async (IGamesRepository repository, CreateGameDto CreateGameDto) =>
+        group.MapPost("/", async (IGamesRepository repository,
+            CreateGameDto CreateGameDto) =>
         {
             var game = CreateGameDto.AsEntity();
             await repository.CreateAsync(game);
